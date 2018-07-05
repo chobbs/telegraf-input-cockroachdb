@@ -360,20 +360,20 @@ type Cockroach struct {
 				LeaseCount      int     `json:"leaseCount"`
 				WritesPerSecond float64 `json:"writesPerSecond"`
 				BytesPerReplica struct {
-					P10  int `json:"p10"`
-					P25  int `json:"p25"`
-					P50  int `json:"p50"`
-					P75  int `json:"p75"`
-					P90  int `json:"p90"`
-					PMax int `json:"pMax"`
+					P10  int `json:"-"`
+					P25  int `json:"-"`
+					P50  int `json:"-"`
+					P75  int `json:"-"`
+					P90  int `json:"-"`
+					PMax int `json:"-"`
 				} `json:"bytesPerReplica"`
 				WritesPerReplica struct {
-					P10  int     `json:"p10"`
-					P25  int     `json:"p25"`
-					P50  int     `json:"p50"`
-					P75  float64 `json:"p75"`
-					P90  float64 `json:"p90"`
-					PMax float64 `json:"pMax"`
+					P10  int     `json:"-"`
+					P25  int     `json:"-"`
+					P50  int     `json:"-"`
+					P75  float64 `json:"-"`
+					P90  float64 `json:"-"`
+					PMax float64 `json:"-"`
 				} `json:"writesPerReplica"`
 			} `json:"capacity"`
 		} `json:"desc"`
@@ -565,8 +565,8 @@ func (c *Cockroachdb) Description() string {
 }
 
 var sampleConfig = `
-  ## URL of CockroachDB Health endpoint.
-  # servers = ["http://localhost:8080"]
+  ## URL of each _status endpoint node in the cluster.
+  # servers = ["http://localhost:8080/_status/nodes/1"]
 `
 
 func (c *Cockroachdb) SampleConfig() string {
@@ -577,27 +577,29 @@ func (c *Cockroachdb) SampleConfig() string {
 func (c *Cockroachdb) Gather(acc telegraf.Accumulator) error {
 	// Default to a single node at localhost (default adminport)
 	if len(c.Servers) == 0 {
-		c.Servers = []string{"http://localhost:8080/"}
+		c.Servers = []string{"http://localhost:8080/_status/nodes/1"}
 	}
 
 	// Range over all servers, gathering stats. Returns early in case of any error.
-	for _, u := range c.Servers {
-		acc.AddError(c.gatherLights(u, acc))
+	for _, s := range c.Servers {
+		acc.AddError(c.gatherNodes(s, acc))
 	}
 
 	return nil
 }
 
 // Gathers _status from a single node, adding them to the accumulator
-func (c *Cockroachdb) gatherLights(s string, acc telegraf.Accumulator) error {
+func (c *Cockroachdb) gatherNodes(s string, acc telegraf.Accumulator) error {
 	// Parse the given URL to extract the server tag
 	u, err := url.Parse(s)
 	if err != nil {
 		return fmt.Errorf("Unable to parse given server url %s: %s", s, err)
 	}
 
-	// Perform the GET request to the cockroachdb /_status/nodes/1 endpoint
-	resp, err := c.client.Get(s + "/_status/nodes/1")
+	// Perform the GET request on all cockroachdb /_status/nodes/(n) endpoint
+	//resp, err := c.client.Get(s + "/_status/nodes/1")
+	resp, err := c.client.Get(s)
+
 	if err != nil {
 		return err
 	}
