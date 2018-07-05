@@ -1,6 +1,6 @@
-# Beta CockroachDB Plugin
+# CockroachDB Plugin
 
-The CockroachDB Telegraf plugin gathers status metrics from one node in the Cockroach cluster for demo purposes only.
+The CockroachDB Telegraf plugin gathers status metrics from one or more nodes in the Cockroach cluster for demo purposes only.
 
 Download and install CockroachDB @https://www.cockroachlabs.com/docs/stable/install-cockroachdb.html
 
