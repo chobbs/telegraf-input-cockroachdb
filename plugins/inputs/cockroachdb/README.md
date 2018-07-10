@@ -9,8 +9,8 @@ Download and install CockroachDB @https://www.cockroachlabs.com/docs/stable/inst
 ```toml
 # Description
 [[inputs.cockroachdb]]
-  ## URL of CockroachDB status endpoint.
-  servers = ["http://localhost:8080"]
+  ## URL's of CockroachDB status endpoint.
+  servers = ["http://localhost:8080/_status/nodes/1"]
 ```
 
 ### Measurements & Fields:
